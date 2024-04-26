@@ -12,8 +12,8 @@ from .common import (
     VOLUME_CONFIG,
 )
 
-N_GPUS = int(os.environ.get("N_GPUS", 2))
-GPU_CONFIG = os.environ.get("GPU_CONFIG", modal.gpu.A10G(count=N_GPUS))
+N_GPUS = 1
+GPU_CONFIG = modal.gpu.A10G(count=N_GPUS)
 
 
 def print_common_training_issues(config):
