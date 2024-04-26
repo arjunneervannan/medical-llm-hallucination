@@ -1,6 +1,6 @@
 base_model: TheBloke/medalpaca-13B-GPTQ
-model_type: LlamaForCausalLM
-tokenizer_type: LlamaTokenizer
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
 is_llama_derived_model: true
 
 load_in_8bit: false
@@ -39,6 +39,12 @@ lora_alpha: 32
 lora_dropout: 0.05
 lora_target_linear: true
 lora_fan_in_fan_out:
+
+lora_modules_to_save:
+  - embed_tokens
+  - lm_head
+
+gptq: true
 
 wandb_project: medalpaca-finetune
 wandb_entity:

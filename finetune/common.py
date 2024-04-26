@@ -15,7 +15,7 @@ axolotl_image = (
         "git clone https://github.com/OpenAccess-AI-Collective/axolotl /root/axolotl",
         "cd /root/axolotl && git checkout v0.4.0",
     )
-    .pip_install("huggingface_hub==0.20.3", "hf-transfer==0.1.5", "wandb==0.16.3")
+    .pip_install("huggingface_hub==0.20.3", "hf-transfer==0.1.5", "wandb==0.16.3", "auto-gptq==0.7.1")
     .env(
         dict(
             HUGGINGFACE_HUB_CACHE="/pretrained",
@@ -30,11 +30,11 @@ vllm_image = Image.from_registry(
 ).pip_install(
     "vllm==0.2.6",
     "torch==2.1.2",
+    "auto-gptq==0.2.0",
 )
 
 app = App(APP_NAME,secrets=[Secret.from_name("huggingface-secret"), Secret.from_name("wandb-secret")])
 
-# Volumes for pre-trained models and training runs.
 pretrained_volume = Volume.from_name("example-pretrained-vol", create_if_missing=True)
 runs_volume = Volume.from_name("example-runs-vol", create_if_missing=True)
 VOLUME_CONFIG: dict[str | PurePosixPath, Volume] = {

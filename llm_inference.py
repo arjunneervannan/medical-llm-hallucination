@@ -62,7 +62,7 @@ vllm_image = (
             "model_name": MODEL_NAME,
             "model_revision": MODEL_REVISION,
         },
-        secrets=[modal.Secret.from_name("huggingface-secret")],
+        secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("wandb-secret")],
     )
 )
 

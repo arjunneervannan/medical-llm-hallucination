@@ -61,7 +61,7 @@ def train(run_folder: str, output_dir: str):
     print(f"Starting training run in {run_folder}.")
     print(f"Using {torch.cuda.device_count()} {torch.cuda.get_device_name()} GPU(s).")
 
-    TRAIN_CMD = "accelerate launch -m axolotl.cli.train ./config.yml"
+    TRAIN_CMD = "accelerate launch -m axolotl.cli.train ./config.yml --device_map='cuda'"
     run_cmd(TRAIN_CMD, run_folder)
 
     # Kick off CPU job to merge the LoRA weights into base model.
@@ -82,7 +82,7 @@ def merge(run_folder: str, output_dir: str):
     with open(f"{run_folder}/config.yml") as config:
         print(f"Merge from {output_path}")
 
-    MERGE_CMD = f"accelerate launch -m axolotl.cli.merge_lora ./config.yml --lora_model_dir='{output_dir}'"
+    MERGE_CMD = f"accelerate launch -m axolotl.cli.merge_lora ./config.yml  --device_map='cuda' --lora_model_dir='{output_dir}'"
     run_cmd(MERGE_CMD, run_folder)
 
     VOLUME_CONFIG["/runs"].commit()
