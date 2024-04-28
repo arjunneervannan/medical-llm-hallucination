@@ -9,8 +9,8 @@ strict: false
 
 datasets:
   # This will be the path used for the data when it is saved to the Volume in the cloud.
-  - path: data.csv
-    ds_type: csv
+  - path: data.jsonl
+    ds_type: json
     type:
       # JSONL file contains question, context, answer fields per line.
       # This gets mapped to instruction, input, output axolotl tags.
@@ -71,7 +71,11 @@ local_rank:
 logging_steps: 1
 xformers_attention:
 flash_attention: true
+device_map: "cuda:0"
+device: "cuda"
+disable_exllama: true
 
+lora_on_cpu: false
 warmup_steps: 10
 eval_steps: 0.05
 eval_table_size:
