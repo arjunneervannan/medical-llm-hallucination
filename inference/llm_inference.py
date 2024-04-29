@@ -23,7 +23,7 @@ import re
 MODEL_DIR = "/model"
 MODEL_NAME = "TheBloke/medalpaca-13B-GPTQ"
 MODEL_REVISION = "main"
-GPU_CONFIG = modal.gpu.A100(count=1, memory=80)
+GPU_CONFIG = modal.gpu.H100(count=1)
 
 COT_PROMPT = """Context: The study aims to determine if physiological, rhythmic fluctuations of vagal baroreflex gain, which are crucial for maintaining cardiovascular stability, persist during various phases including exercise, post-exercise ischaemia, and recovery.
 Step 1: Define what vagal baroreflex gain is and its importance in cardiovascular regulation.
@@ -244,9 +244,10 @@ def main():
     tokenizer = "tokenizer"
     df = pd.DataFrame()
     current_mode = "base"
-    queries = load_test_data(tokenizer, current_mode)
     current_mode_list = ["base", "detailed", "cot", "few"]
     for current_mode in current_mode_list:
+        queries = load_test_data(tokenizer, current_mode)
+        df = pd.DataFrame()
         for query in queries:
             question = query[0]
             log_prob = None
