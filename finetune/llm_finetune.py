@@ -13,7 +13,7 @@ from .common import (
 )
 
 N_GPUS = 1
-GPU_CONFIG = modal.gpu.A100(count=1, memory=40)
+GPU_CONFIG = modal.gpu.A100(count=1, memory=80)
 
 def print_common_training_issues(config):
     min_train_tokens = (
@@ -72,7 +72,7 @@ def train(run_folder: str, output_dir: str):
     return merge_handle
 
 
-@app.function(image=axolotl_image, volumes=VOLUME_CONFIG, timeout=3600 * 24)
+@app.function(image=axolotl_image, gpu=GPU_CONFIG, volumes=VOLUME_CONFIG, timeout=3600 * 24)
 def merge(run_folder: str, output_dir: str):
     import shutil
 
