@@ -5,6 +5,8 @@ import torch
 import pandas as pd
 import os
 import time
+import numpy as np
+import json
 
 # # Define the model and tokenizer directories
 # model_directory = "/Users/karansampath/.cache/lm-studio/models/TheBloke/medalpaca-13B-GGUF"
@@ -62,7 +64,7 @@ vllm_image = (
             "model_name": MODEL_NAME,
             "model_revision": MODEL_REVISION,
         },
-        secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("wandb-secret")],
+        secrets=[modal.Secret.from_name("my-huggingface-secret"), modal.Secret.from_name("wandb-secret")],
     )
 )
 
@@ -112,6 +114,7 @@ class Model:
             temperature=0.75,
             max_tokens=128,
             repetition_penalty=1.1,
+            logprobs=0,
         )
 
         request_id = random_uuid()
@@ -131,8 +134,11 @@ class Model:
             text_delta = output.outputs[0].text[index:]
             index = len(output.outputs[0].text)
             num_tokens = len(output.outputs[0].token_ids)
+            log_prob = [[(elem.logprob, elem.decoded_token) 
+                         for elem in x.values()][0]
+                        for x in output.outputs[0].logprobs]
 
-            yield text_delta
+            yield log_prob
         duration_s = (time.monotonic_ns() - start) / 1e9
 
         yield (
@@ -148,21 +154,50 @@ class Model:
             ray.shutdown()
 
 
+def calculate_log_prob(log_prob):
+    return np.mean([x[0] for x in log_prob])
+
+
+def return_sequence(log_prob):
+    return ''.join([x[1] for x in log_prob])
+
+
+def load_test_data():
+    queries = []
+    with open('data/pubmedqa-labeled.jsonl', mode='r') as infile:
+        for line in infile:
+            json_line = json.loads(line)
+            question = json_line['question']
+            context = ' '.join(json_line['context']['contexts'])
+            final_decision = json_line['final_decision']
+            # print(context)
+            full_query = ' '.join(['Context:', context, '\n',
+                                   'Question:', question, ])
+            queries.append((full_query, final_decision))
+    return queries
+
+
 @app.local_entrypoint()
 def main():
-    questions = [
-"What are the common symptoms and treatments for Type 2 Diabetes?",
-"How does the influenza virus transmit from one person to another?",
-"What are the latest advancements in cancer immunotherapy?",
-"Describe the role of telemedicine in improving healthcare accessibility.",
-"What is the normal range for blood pressure in adults?",
-"Who was Hippocrates and what is his significance in the history of medicine?",
-]
+    # questions = [
+    #     "What are the common symptoms and treatments for Type 2 Diabetes?",
+    #     # "How does the influenza virus transmit from one person to another?",
+    #     # "What are the latest advancements in cancer immunotherapy?",
+    #     # "Describe the role of telemedicine in improving healthcare accessibility.",
+    #     # "What is the normal range for blood pressure in adults?",
+    #     # "Who was Hippocrates and what is his significance in the history of medicine?",
+    #     ]
     model = Model()
-    for question in questions:
-        print("Sending new request:", question, "\n\n")
-        for text in model.completion_stream.remote_gen(question):
-            print(text, end="", flush=text.endswith("\n"))
+    queries = load_test_data()
+    for query in queries:
+        question = query[0]
+        log_prob = None
+        prev = None
+        for output in model.completion_stream.remote_gen(question):
+            prev = log_prob 
+            log_prob = output
+        print(calculate_log_prob(prev))
+        print(return_sequence(prev))
 
 
 
