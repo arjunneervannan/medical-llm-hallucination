@@ -83,7 +83,7 @@ vllm_image = (
             "model_name": MODEL_NAME,
             "model_revision": MODEL_REVISION,
         },
-        secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("wandb-secret")],
+        secrets=[modal.Secret.from_name("my-huggingface-secret"), modal.Secret.from_name("wandb-secret")],
     )
 )
 
@@ -224,8 +224,8 @@ def load_test_data(tokenizer, mode):
                 full_query = truncate_conversation_history(tokenizer, FEW_SHOT_PROMPT, full_query, max_sequence_length)
             queries.append((full_query, final_decision))
             count += 1
-            if count > 20:
-                break
+            # if count > 20:
+            #     break
     return queries
 
 
@@ -243,7 +243,8 @@ def main():
     tokenizer = "tokenizer"
     df = pd.DataFrame()
     current_mode = "base"
-    current_mode_list = ["base", "detailed", "cot", "few"]
+    # current_mode_list = ["base", "detailed", "cot", "few"]
+    current_mode_list = ["few"]
     for current_mode in current_mode_list:
         queries = load_test_data(tokenizer, current_mode)
         df = pd.DataFrame()
