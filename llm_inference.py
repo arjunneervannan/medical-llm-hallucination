@@ -134,7 +134,6 @@ class Model:
             max_tokens=512,
             repetition_penalty=1.1,
             logprobs=0,
-            truncate_prompt_tokens=512,
         )
 
         request_id = random_uuid()
@@ -225,8 +224,8 @@ def load_test_data(tokenizer, mode):
                 full_query = truncate_conversation_history(tokenizer, FEW_SHOT_PROMPT, full_query, max_sequence_length)
             queries.append((full_query, final_decision))
             count += 1
-            # if count > 20:
-            #     break
+            if count > 20:
+                break
     return queries
 
 
@@ -259,7 +258,7 @@ def main():
             prev = prev[0]
             full_answer = return_sequence(prev)
             new_row = pd.DataFrame({
-                'Question': [question[-512:]],
+                'Question': [question],
                 'Answer': [full_answer],
                 'Log_Probability': [calculate_log_prob(prev)],
                 'Accuracy': [query[1] in full_answer],
